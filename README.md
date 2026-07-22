@@ -1,2 +1,1 @@
-# momentum
-A full-stack personal life tracking platform for habits, fitness, finances, and productivity analytics.
+Momentum is a full-stack personal life tracking platform that helps users improve their daily habits, productivity, fitness, and finances through analytics and personalized dashboards.
