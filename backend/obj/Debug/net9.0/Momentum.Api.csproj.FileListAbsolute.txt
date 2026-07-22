@@ -6,15 +6,11 @@
 /Users/brandonpagani/Desktop/momentum/backend/bin/Debug/net9.0/Momentum.Api.runtimeconfig.json
 /Users/brandonpagani/Desktop/momentum/backend/bin/Debug/net9.0/Momentum.Api.dll
 /Users/brandonpagani/Desktop/momentum/backend/bin/Debug/net9.0/Momentum.Api.pdb
-/Users/brandonpagani/Desktop/momentum/backend/bin/Debug/net9.0/Microsoft.AspNetCore.OpenApi.dll
-/Users/brandonpagani/Desktop/momentum/backend/bin/Debug/net9.0/Microsoft.OpenApi.dll
-/Users/brandonpagani/Desktop/momentum/backend/obj/Debug/net9.0/Momentum.Api.csproj.AssemblyReference.cache
 /Users/brandonpagani/Desktop/momentum/backend/obj/Debug/net9.0/rpswa.dswa.cache.json
 /Users/brandonpagani/Desktop/momentum/backend/obj/Debug/net9.0/Momentum.Api.GeneratedMSBuildEditorConfig.editorconfig
 /Users/brandonpagani/Desktop/momentum/backend/obj/Debug/net9.0/Momentum.Api.AssemblyInfoInputs.cache
 /Users/brandonpagani/Desktop/momentum/backend/obj/Debug/net9.0/Momentum.Api.AssemblyInfo.cs
 /Users/brandonpagani/Desktop/momentum/backend/obj/Debug/net9.0/Momentum.Api.csproj.CoreCompileInputs.cache
-/Users/brandonpagani/Desktop/momentum/backend/obj/Debug/net9.0/Momentum.Api.MvcApplicationPartsAssemblyInfo.cs
 /Users/brandonpagani/Desktop/momentum/backend/obj/Debug/net9.0/Momentum.Api.MvcApplicationPartsAssemblyInfo.cache
 /Users/brandonpagani/Desktop/momentum/backend/obj/Debug/net9.0/Momentum.Api.sourcelink.json
 /Users/brandonpagani/Desktop/momentum/backend/obj/Debug/net9.0/rjimswa.dswa.cache.json
@@ -25,7 +21,6 @@
 /Users/brandonpagani/Desktop/momentum/backend/obj/Debug/net9.0/staticwebassets.build.json.cache
 /Users/brandonpagani/Desktop/momentum/backend/obj/Debug/net9.0/staticwebassets.development.json
 /Users/brandonpagani/Desktop/momentum/backend/obj/Debug/net9.0/staticwebassets.build.endpoints.json
-/Users/brandonpagani/Desktop/momentum/backend/obj/Debug/net9.0/Momentum.12628D9F.Up2Date
 /Users/brandonpagani/Desktop/momentum/backend/obj/Debug/net9.0/Momentum.Api.dll
 /Users/brandonpagani/Desktop/momentum/backend/obj/Debug/net9.0/refint/Momentum.Api.dll
 /Users/brandonpagani/Desktop/momentum/backend/obj/Debug/net9.0/Momentum.Api.pdb
