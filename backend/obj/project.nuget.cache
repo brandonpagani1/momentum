@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "qYuhtM2/Jy8=",
+  "success": true,
+  "projectFilePath": "/Users/brandonpagani/Desktop/momentum/backend/Momentum.Api.csproj",
+  "expectedPackageFiles": [
+    "/Users/brandonpagani/.nuget/packages/microsoft.aspnetcore.openapi/9.0.16/microsoft.aspnetcore.openapi.9.0.16.nupkg.sha512",
+    "/Users/brandonpagani/.nuget/packages/microsoft.openapi/1.6.17/microsoft.openapi.1.6.17.nupkg.sha512"
+  ],
+  "logs": []
+}
