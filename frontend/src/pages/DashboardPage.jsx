@@ -1,41 +1,9 @@
 import { useAuth } from '../auth/useAuth.js'
-
-const Icon = ({ children }) => <span className="icon" aria-hidden="true">{children}</span>
-
-const navItems = [
-  ['▦', 'Overview'],
-  ['✓', 'Habits'],
-  ['□', 'Tasks'],
-  ['⌁', 'Fitness'],
-  ['$', 'Finance'],
-  ['⌁', 'Analytics'],
-]
+import AppSidebar from '../components/AppSidebar.jsx'
 
 const week = [
   ['M', 76], ['T', 92], ['W', 64], ['T', 86], ['F', 72], ['S', 48], ['S', 58],
 ]
-
-function Sidebar({ user, onLogout }) {
-  const initials = user.displayName.split(' ').map((name) => name[0]).join('').slice(0, 2).toUpperCase()
-
-  return (
-    <aside className="sidebar">
-      <div className="brand"><span className="brand-mark">M</span><span>Momentum</span></div>
-      <nav className="side-nav" aria-label="Primary navigation">
-        <p className="nav-label">Workspace</p>
-        {navItems.map(([icon, label], index) => (
-          <div className={`nav-item ${index === 0 ? 'active' : ''}`} key={label}>
-            <Icon>{icon}</Icon><span>{label}</span>
-          </div>
-        ))}
-      </nav>
-      <div className="sidebar-footer">
-        <div className="nav-item"><Icon>?</Icon><span>Help center</span></div>
-        <div className="user-mini"><div className="avatar">{initials}</div><div><strong>{user.displayName}</strong><button type="button" onClick={onLogout}>Sign out</button></div></div>
-      </div>
-    </aside>
-  )
-}
 
 function CardHeader({ eyebrow, title, meta, accent }) {
   return <header className="card-header"><div><span className={`eyebrow ${accent || ''}`}>{eyebrow}</span><h2>{title}</h2></div>{meta && <span className="meta">{meta}</span>}</header>
@@ -48,7 +16,7 @@ function DashboardPage() {
 
   return (
     <div className="app-shell">
-      <Sidebar user={user} onLogout={logout} />
+      <AppSidebar user={user} onLogout={logout} />
       <div className="workspace">
         <header className="topbar">
           <div className="mobile-brand"><span className="brand-mark">M</span><strong>Momentum</strong></div>
