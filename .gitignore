@@ -2,13 +2,18 @@
 frontend/node_modules/
 frontend/dist/
 
-# Backend
-backend/bin/
-backend/obj/
-
 # Environment files
 .env
 .env.*
 
 # macOS
 .DS_Store
+
+# .NET build files
+**/bin/
+**/obj/
+
+# Local databases
+*.db
+*.db-shm
+*.db-wal
