@@ -3,7 +3,7 @@ import { NavLink } from 'react-router-dom'
 const navItems = [
   ['▦', 'Overview', '/dashboard'],
   ['✓', 'Habits', '/habits'],
-  ['□', 'Tasks'],
+  ['□', 'Tasks', '/tasks'],
   ['⌁', 'Fitness'],
   ['$', 'Finance'],
   ['⌁', 'Analytics'],

@@ -7,4 +7,5 @@ public sealed class ApplicationUser : IdentityUser
     public required string DisplayName { get; set; }
 
     public ICollection<Habit> Habits { get; set; } = [];
+    public ICollection<TaskItem> Tasks { get; set; } = [];
 }
