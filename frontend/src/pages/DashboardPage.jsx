@@ -29,8 +29,10 @@ function DashboardPage() {
   const { user, accessToken, logout } = useAuth()
   const [habits, setHabits] = useState([])
   const [tasks, setTasks] = useState([])
+  const [workouts, setWorkouts] = useState([])
   const [habitsStatus, setHabitsStatus] = useState('loading')
   const [tasksStatus, setTasksStatus] = useState('loading')
+  const [fitnessStatus, setFitnessStatus] = useState('loading')
 
   const request = useCallback((path) => apiRequest(path, {
     headers: { Authorization: `Bearer ${accessToken}` },
@@ -55,6 +57,16 @@ function DashboardPage() {
         setTasks(items)
         setTasksStatus('ready')
       })
+
+    request('/api/workouts')
+      .then((items) => {
+        if (!isCurrent) return
+        setWorkouts(items)
+        setFitnessStatus('ready')
+      })
+      .catch(() => {
+        if (isCurrent) setFitnessStatus('error')
+      })
       .catch(() => {
         if (isCurrent) setTasksStatus('error')
       })
@@ -77,6 +89,26 @@ function DashboardPage() {
       left.priority - right.priority
       || (left.dueDate ?? '9999-12-31').localeCompare(right.dueDate ?? '9999-12-31')
       || left.createdAt.localeCompare(right.createdAt))[0], [tasks])
+  const weekStart = new Date()
+  weekStart.setHours(0, 0, 0, 0)
+  weekStart.setDate(weekStart.getDate() - ((weekStart.getDay() + 6) % 7))
+  const weekStartValue = [
+    weekStart.getFullYear(),
+    String(weekStart.getMonth() + 1).padStart(2, '0'),
+    String(weekStart.getDate()).padStart(2, '0'),
+  ].join('-')
+  const nextWeekStart = new Date(weekStart)
+  nextWeekStart.setDate(weekStart.getDate() + 7)
+  const nextWeekStartValue = [
+    nextWeekStart.getFullYear(),
+    String(nextWeekStart.getMonth() + 1).padStart(2, '0'),
+    String(nextWeekStart.getDate()).padStart(2, '0'),
+  ].join('-')
+  const weeklyWorkouts = workouts.filter((workout) =>
+    workout.workoutDate >= weekStartValue && workout.workoutDate < nextWeekStartValue)
+  const weeklyMinutes = weeklyWorkouts.reduce((total, workout) => total + workout.durationMinutes, 0)
+  const weeklyCalories = weeklyWorkouts.reduce((total, workout) => total + (workout.caloriesBurned ?? 0), 0)
+  const latestWorkout = workouts[0]
 
   return (
     <div className="app-shell">
@@ -132,10 +164,14 @@ function DashboardPage() {
             </article>
 
             <article className="card fitness-card">
-              <CardHeader eyebrow="Movement" title="Fitness" meta="Today" accent="green-text" />
-              <div className="fitness-main"><div className="metric-icon">↗</div><div><strong>6,842</strong><span>steps</span></div><em>68%</em></div>
-              <div className="progress-line green"><span style={{width: '68%'}}></span></div>
-              <div className="stat-row"><span><b>42</b><small>active min</small></span><span><b>2.8</b><small>kilometers</small></span><span><b>310</b><small>calories</small></span></div>
+              <CardHeader eyebrow="Movement" title="Fitness" meta="This week" accent="green-text" />
+              {fitnessStatus === 'loading' ? <div className="dashboard-card-state">Loading fitness…</div> : fitnessStatus === 'error' ? <div className="dashboard-card-state error">Couldn’t load fitness.</div> : (
+                <>
+                  <div className="fitness-main"><div className="metric-icon">↗</div><div><strong>{latestWorkout?.workoutType ?? 'No workouts yet'}</strong><span>{latestWorkout ? `${latestWorkout.durationMinutes} min` : 'Log your first workout'}</span></div></div>
+                  <div className="progress-line green"><span style={{width: weeklyWorkouts.length ? '100%' : '0%'}}></span></div>
+                  <div className="stat-row"><span><b>{weeklyWorkouts.length}</b><small>workouts</small></span><span><b>{weeklyMinutes}</b><small>minutes</small></span><span><b>{weeklyCalories}</b><small>calories</small></span></div>
+                </>
+              )}
             </article>
 
             <article className="card finance-card">

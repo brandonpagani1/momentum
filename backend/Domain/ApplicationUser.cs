@@ -8,4 +8,5 @@ public sealed class ApplicationUser : IdentityUser
 
     public ICollection<Habit> Habits { get; set; } = [];
     public ICollection<TaskItem> Tasks { get; set; } = [];
+    public ICollection<Workout> Workouts { get; set; } = [];
 }

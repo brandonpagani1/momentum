@@ -4,7 +4,7 @@ const navItems = [
   ['▦', 'Overview', '/dashboard'],
   ['✓', 'Habits', '/habits'],
   ['□', 'Tasks', '/tasks'],
-  ['⌁', 'Fitness'],
+  ['⌁', 'Fitness', '/fitness'],
   ['$', 'Finance'],
   ['⌁', 'Analytics'],
 ]
