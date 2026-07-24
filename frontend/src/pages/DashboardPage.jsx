@@ -1,5 +1,7 @@
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useAuth } from '../auth/useAuth.js'
 import AppSidebar from '../components/AppSidebar.jsx'
+import { apiRequest } from '../lib/api.js'
 
 const week = [
   ['M', 76], ['T', 92], ['W', 64], ['T', 86], ['F', 72], ['S', 48], ['S', 58],
@@ -9,10 +11,72 @@ function CardHeader({ eyebrow, title, meta, accent }) {
   return <header className="card-header"><div><span className={`eyebrow ${accent || ''}`}>{eyebrow}</span><h2>{title}</h2></div>{meta && <span className="meta">{meta}</span>}</header>
 }
 
+function formatDueDate(value) {
+  if (!value) return 'No due date'
+
+  const dueDate = new Date(`${value}T00:00:00`)
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const tomorrow = new Date(today)
+  tomorrow.setDate(today.getDate() + 1)
+
+  if (dueDate.getTime() === today.getTime()) return 'Today'
+  if (dueDate.getTime() === tomorrow.getTime()) return 'Tomorrow'
+  return new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' }).format(dueDate)
+}
+
 function DashboardPage() {
-  const { user, logout } = useAuth()
+  const { user, accessToken, logout } = useAuth()
+  const [habits, setHabits] = useState([])
+  const [tasks, setTasks] = useState([])
+  const [habitsStatus, setHabitsStatus] = useState('loading')
+  const [tasksStatus, setTasksStatus] = useState('loading')
+
+  const request = useCallback((path) => apiRequest(path, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  }), [accessToken])
+
+  useEffect(() => {
+    let isCurrent = true
+
+    request('/api/habits')
+      .then((items) => {
+        if (!isCurrent) return
+        setHabits(items)
+        setHabitsStatus('ready')
+      })
+      .catch(() => {
+        if (isCurrent) setHabitsStatus('error')
+      })
+
+    request('/api/tasks')
+      .then((items) => {
+        if (!isCurrent) return
+        setTasks(items)
+        setTasksStatus('ready')
+      })
+      .catch(() => {
+        if (isCurrent) setTasksStatus('error')
+      })
+
+    return () => {
+      isCurrent = false
+    }
+  }, [request])
+
   const firstName = user.displayName.split(' ')[0]
   const initials = user.displayName.split(' ').map((name) => name[0]).join('').slice(0, 2).toUpperCase()
+  const completedHabits = habits.filter((habit) => habit.isCompletedToday).length
+  const habitProgress = habits.length ? Math.round((completedHabits / habits.length) * 100) : 0
+  const completedTasks = tasks.filter((task) => task.isCompleted).length
+  const remainingTasks = tasks.length - completedTasks
+  const taskProgress = tasks.length ? Math.round((completedTasks / tasks.length) * 100) : 0
+  const focusTask = useMemo(() => tasks
+    .filter((task) => !task.isCompleted)
+    .sort((left, right) =>
+      left.priority - right.priority
+      || (left.dueDate ?? '9999-12-31').localeCompare(right.dueDate ?? '9999-12-31')
+      || left.createdAt.localeCompare(right.createdAt))[0], [tasks])
 
   return (
     <div className="app-shell">
@@ -40,15 +104,23 @@ function DashboardPage() {
             </article>
 
             <article className="card habits-card">
-              <CardHeader eyebrow="Today" title="Habits" meta="4 of 5" accent="purple-text" />
-              <div className="habit-list"><div><span className="check checked">✓</span><p><strong>Morning planning</strong><small>18 day streak</small></p><em>7:30 AM</em></div><div><span className="check checked">✓</span><p><strong>Read 20 minutes</strong><small>6 day streak</small></p><em>8:10 AM</em></div><div><span className="check"></span><p><strong>Evening reflection</strong><small>Due tonight</small></p><em>9:00 PM</em></div></div>
-              <div className="progress-line"><span style={{width: '80%'}}></span></div>
+              <CardHeader eyebrow="Today" title="Habits" meta={habitsStatus === 'ready' ? `${completedHabits} of ${habits.length}` : ''} accent="purple-text" />
+              {habitsStatus === 'loading' ? <div className="dashboard-card-state">Loading habits…</div> : habitsStatus === 'error' ? <div className="dashboard-card-state error">Couldn’t load habits.</div> : habits.length === 0 ? <div className="dashboard-card-state">No habits yet.</div> : (
+                <div className="habit-list">
+                  {habits.slice(0, 3).map((habit) => <div key={habit.id}><span className={`check ${habit.isCompletedToday ? 'checked' : ''}`}>{habit.isCompletedToday ? '✓' : ''}</span><p><strong>{habit.name}</strong><small>{habit.currentStreak} day streak</small></p><em>{habit.isCompletedToday ? 'Done' : 'Today'}</em></div>)}
+                </div>
+              )}
+              <div className="progress-line"><span style={{width: `${habitProgress}%`}}></span></div>
             </article>
 
             <article className="card tasks-card">
-              <CardHeader eyebrow="Focus" title="Tasks" meta="3 remaining" accent="orange-text" />
-              <div className="task-summary"><strong>7</strong><span>completed<br/>this week</span><div className="donut"><b>70%</b></div></div>
-              <div className="priority"><span>High priority</span><strong>Finish project outline</strong><small>Today · Work</small></div>
+              <CardHeader eyebrow="Focus" title="Tasks" meta={tasksStatus === 'ready' ? `${remainingTasks} remaining` : ''} accent="orange-text" />
+              {tasksStatus === 'loading' ? <div className="dashboard-card-state">Loading tasks…</div> : tasksStatus === 'error' ? <div className="dashboard-card-state error">Couldn’t load tasks.</div> : tasks.length === 0 ? <div className="dashboard-card-state">No tasks yet.</div> : (
+                <>
+                  <div className="task-summary"><strong>{completedTasks}</strong><span>completed<br/>in total</span><div className="donut" style={{background: `conic-gradient(#df9a58 ${taskProgress}%, #f4e9df 0)`}}><b>{taskProgress}%</b></div></div>
+                  {focusTask ? <div className="priority"><span>{focusTask.priority === 1 ? 'High' : focusTask.priority === 2 ? 'Medium' : 'Low'} priority</span><strong>{focusTask.title}</strong><small>{formatDueDate(focusTask.dueDate)} · Open</small></div> : <div className="priority complete-priority"><span>All complete</span><strong>You’re caught up</strong><small>No remaining tasks</small></div>}
+                </>
+              )}
             </article>
 
             <article className="card weekly-card">

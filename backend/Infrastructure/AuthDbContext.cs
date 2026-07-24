@@ -9,6 +9,7 @@ public sealed class AuthDbContext(DbContextOptions<AuthDbContext> options)
 {
     public DbSet<Habit> Habits => Set<Habit>();
     public DbSet<HabitCompletion> HabitCompletions => Set<HabitCompletion>();
+    public DbSet<TaskItem> Tasks => Set<TaskItem>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -32,6 +33,18 @@ public sealed class AuthDbContext(DbContextOptions<AuthDbContext> options)
                 .HasForeignKey(item => item.HabitId)
                 .OnDelete(DeleteBehavior.Cascade);
             completion.HasIndex(item => new { item.HabitId, item.CompletedOn }).IsUnique();
+        });
+
+        builder.Entity<TaskItem>(task =>
+        {
+            task.Property(item => item.Title).HasMaxLength(150).IsRequired();
+            task.Property(item => item.Description).HasMaxLength(500);
+            task.HasOne(item => item.User)
+                .WithMany(user => user.Tasks)
+                .HasForeignKey(item => item.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+            task.HasIndex(item => item.UserId);
+            task.HasIndex(item => new { item.UserId, item.IsCompleted, item.DueDate });
         });
     }
 }

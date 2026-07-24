@@ -4,6 +4,7 @@ import DashboardPage from './pages/DashboardPage.jsx'
 import HabitsPage from './pages/HabitsPage.jsx'
 import LoginPage from './pages/LoginPage.jsx'
 import RegisterPage from './pages/RegisterPage.jsx'
+import TasksPage from './pages/TasksPage.jsx'
 
 function App() {
   return (
@@ -13,6 +14,7 @@ function App() {
       <Route element={<ProtectedRoute />}>
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/habits" element={<HabitsPage />} />
+        <Route path="/tasks" element={<TasksPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>
