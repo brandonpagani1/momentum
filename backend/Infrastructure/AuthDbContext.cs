@@ -11,6 +11,7 @@ public sealed class AuthDbContext(DbContextOptions<AuthDbContext> options)
     public DbSet<HabitCompletion> HabitCompletions => Set<HabitCompletion>();
     public DbSet<TaskItem> Tasks => Set<TaskItem>();
     public DbSet<Workout> Workouts => Set<Workout>();
+    public DbSet<FinanceTransaction> FinanceTransactions => Set<FinanceTransaction>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -58,6 +59,20 @@ public sealed class AuthDbContext(DbContextOptions<AuthDbContext> options)
                 .OnDelete(DeleteBehavior.Cascade);
             workout.HasIndex(item => item.UserId);
             workout.HasIndex(item => new { item.UserId, item.WorkoutDate });
+        });
+
+        builder.Entity<FinanceTransaction>(transaction =>
+        {
+            transaction.Property(item => item.Type).HasConversion<string>().HasMaxLength(10);
+            transaction.Property(item => item.Amount).HasPrecision(18, 2);
+            transaction.Property(item => item.Category).HasMaxLength(100).IsRequired();
+            transaction.Property(item => item.Notes).HasMaxLength(500);
+            transaction.HasOne(item => item.User)
+                .WithMany(user => user.FinanceTransactions)
+                .HasForeignKey(item => item.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+            transaction.HasIndex(item => item.UserId);
+            transaction.HasIndex(item => new { item.UserId, item.TransactionDate });
         });
     }
 }

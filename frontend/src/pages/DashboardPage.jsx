@@ -25,14 +25,23 @@ function formatDueDate(value) {
   return new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' }).format(dueDate)
 }
 
+const currency = new Intl.NumberFormat(undefined, { style: 'currency', currency: 'USD' })
+
+function formatTransactionDate(value) {
+  return new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' })
+    .format(new Date(`${value}T00:00:00`))
+}
+
 function DashboardPage() {
   const { user, accessToken, logout } = useAuth()
   const [habits, setHabits] = useState([])
   const [tasks, setTasks] = useState([])
   const [workouts, setWorkouts] = useState([])
+  const [transactions, setTransactions] = useState([])
   const [habitsStatus, setHabitsStatus] = useState('loading')
   const [tasksStatus, setTasksStatus] = useState('loading')
   const [fitnessStatus, setFitnessStatus] = useState('loading')
+  const [financeStatus, setFinanceStatus] = useState('loading')
 
   const request = useCallback((path) => apiRequest(path, {
     headers: { Authorization: `Bearer ${accessToken}` },
@@ -69,6 +78,16 @@ function DashboardPage() {
       })
       .catch(() => {
         if (isCurrent) setTasksStatus('error')
+      })
+
+    request('/api/financetransactions')
+      .then((items) => {
+        if (!isCurrent) return
+        setTransactions(items)
+        setFinanceStatus('ready')
+      })
+      .catch(() => {
+        if (isCurrent) setFinanceStatus('error')
       })
 
     return () => {
@@ -109,6 +128,19 @@ function DashboardPage() {
   const weeklyMinutes = weeklyWorkouts.reduce((total, workout) => total + workout.durationMinutes, 0)
   const weeklyCalories = weeklyWorkouts.reduce((total, workout) => total + (workout.caloriesBurned ?? 0), 0)
   const latestWorkout = workouts[0]
+  const now = new Date()
+  const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+  const monthlyTransactions = transactions.filter((transaction) =>
+    transaction.transactionDate.startsWith(currentMonth))
+  const monthlyIncome = monthlyTransactions
+    .filter((transaction) => transaction.type === 'Income')
+    .reduce((total, transaction) => total + transaction.amount, 0)
+  const monthlyExpenses = monthlyTransactions
+    .filter((transaction) => transaction.type === 'Expense')
+    .reduce((total, transaction) => total + transaction.amount, 0)
+  const monthlyBalance = monthlyIncome - monthlyExpenses
+  const latestTransaction = transactions[0]
+  const monthName = new Intl.DateTimeFormat(undefined, { month: 'long' }).format(now)
 
   return (
     <div className="app-shell">
@@ -175,10 +207,14 @@ function DashboardPage() {
             </article>
 
             <article className="card finance-card">
-              <CardHeader eyebrow="This month" title="Finance" meta="July" accent="teal-text" />
-              <div className="budget"><div><span>Monthly budget</span><strong>$2,184 <small>of $3,200</small></strong></div><b>68%</b></div>
-              <div className="progress-line teal"><span style={{width: '68%'}}></span></div>
-              <div className="finance-note"><span>↓</span><p><strong>$184 under pace</strong><small>Looking good for this month</small></p></div>
+              <CardHeader eyebrow="This month" title="Finance" meta={monthName} accent="teal-text" />
+              {financeStatus === 'loading' ? <div className="dashboard-card-state">Loading finance…</div> : financeStatus === 'error' ? <div className="dashboard-card-state error">Couldn’t load finance.</div> : (
+                <>
+                  <div className="finance-balance"><span>Monthly balance</span><strong>{currency.format(monthlyBalance)}</strong></div>
+                  <div className="finance-totals"><span><small>Income</small><b className="income">{currency.format(monthlyIncome)}</b></span><span><small>Expenses</small><b className="expense">{currency.format(monthlyExpenses)}</b></span></div>
+                  {latestTransaction ? <div className={`finance-note ${latestTransaction.type.toLowerCase()}`}><span>{latestTransaction.type === 'Income' ? '↓' : '↑'}</span><p><strong>{latestTransaction.type} · {currency.format(latestTransaction.amount)}</strong><small>{latestTransaction.category} · {formatTransactionDate(latestTransaction.transactionDate)}</small></p></div> : <div className="finance-note empty"><span>$</span><p><strong>No transactions yet</strong><small>Add one from the Finance page</small></p></div>}
+                </>
+              )}
             </article>
 
             <article className="card insights-card">
