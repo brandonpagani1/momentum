@@ -5,6 +5,7 @@ import DashboardPage from './pages/DashboardPage.jsx'
 import FinancePage from './pages/FinancePage.jsx'
 import FitnessPage from './pages/FitnessPage.jsx'
 import HabitsPage from './pages/HabitsPage.jsx'
+import GoalsPage from './pages/GoalsPage.jsx'
 import LoginPage from './pages/LoginPage.jsx'
 import RegisterPage from './pages/RegisterPage.jsx'
 import TasksPage from './pages/TasksPage.jsx'
@@ -21,6 +22,7 @@ function App() {
         <Route path="/fitness" element={<FitnessPage />} />
         <Route path="/finance" element={<FinancePage />} />
         <Route path="/analytics" element={<AnalyticsPage />} />
+        <Route path="/goals" element={<GoalsPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>

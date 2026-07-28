@@ -10,4 +10,5 @@ public sealed class ApplicationUser : IdentityUser
     public ICollection<TaskItem> Tasks { get; set; } = [];
     public ICollection<Workout> Workouts { get; set; } = [];
     public ICollection<FinanceTransaction> FinanceTransactions { get; set; } = [];
+    public ICollection<Goal> Goals { get; set; } = [];
 }

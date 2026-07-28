@@ -36,6 +36,13 @@ public sealed record FinanceAnalyticsResponse(
     IReadOnlyList<CategoryTotalResponse> ExpensesByCategory,
     IReadOnlyList<DailyAmountResponse> DailyExpenses);
 
+public sealed record GoalsAnalyticsResponse(
+    int ActiveGoals,
+    int CompletedGoals,
+    int PausedGoals,
+    int CompletionRate,
+    int AverageActiveProgress);
+
 public sealed record ScoreComponentResponse(int? Score, int Weight, bool HasData);
 
 public sealed record MomentumScoreResponse(
@@ -58,5 +65,6 @@ public sealed record AnalyticsSummaryResponse(
     TasksAnalyticsResponse Tasks,
     FitnessAnalyticsResponse Fitness,
     FinanceAnalyticsResponse Finance,
+    GoalsAnalyticsResponse Goals,
     MomentumScoreResponse MomentumScore,
     bool HasAnyData);

@@ -159,6 +159,17 @@ export default function AnalyticsPage() {
                   <h3>Expenses by category</h3>
                   {summary.finance.expensesByCategory.length === 0 ? <div className="analytics-empty compact">No expenses this month.</div> : <div className="category-list">{summary.finance.expensesByCategory.map((item) => <div key={item.category}><span>{item.category}</span><i><b style={{ width: `${item.total / summary.finance.expensesThisMonth * 100}%` }} /></i><strong>{currency.format(item.total)}</strong></div>)}</div>}
                 </article>
+
+                <article className="analytics-card goals-analytics">
+                  <header><div><span className="eyebrow green-text">Milestones</span><h2>Goals</h2></div><strong>{summary.goals.completionRate}% complete</strong></header>
+                  <div className="analytics-stat-row">
+                    <span><b>{summary.goals.activeGoals}</b> active</span>
+                    <span><b>{summary.goals.completedGoals}</b> completed</span>
+                    <span><b>{summary.goals.pausedGoals}</b> paused</span>
+                  </div>
+                  <div className="goal-analytics-progress"><div><span>Average active progress</span><b>{summary.goals.averageActiveProgress}%</b></div><div className="split-bar" role="progressbar" aria-label="Average progress across active goals" aria-valuemin="0" aria-valuemax="100" aria-valuenow={summary.goals.averageActiveProgress}><i style={{ width: `${summary.goals.averageActiveProgress}%` }} /></div></div>
+                  <p className="data-note">Goals are reported here but do not change the Momentum Score formula.</p>
+                </article>
               </section>
             </>
           )}
