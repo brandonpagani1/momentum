@@ -6,7 +6,7 @@ const navItems = [
   ['□', 'Tasks', '/tasks'],
   ['⌁', 'Fitness', '/fitness'],
   ['$', 'Finance', '/finance'],
-  ['⌁', 'Analytics'],
+  ['◫', 'Analytics', '/analytics'],
 ]
 
 const Icon = ({ children }) => <span className="icon" aria-hidden="true">{children}</span>

@@ -3,10 +3,6 @@ import { useAuth } from '../auth/useAuth.js'
 import AppSidebar from '../components/AppSidebar.jsx'
 import { apiRequest } from '../lib/api.js'
 
-const week = [
-  ['M', 76], ['T', 92], ['W', 64], ['T', 86], ['F', 72], ['S', 48], ['S', 58],
-]
-
 function CardHeader({ eyebrow, title, meta, accent }) {
   return <header className="card-header"><div><span className={`eyebrow ${accent || ''}`}>{eyebrow}</span><h2>{title}</h2></div>{meta && <span className="meta">{meta}</span>}</header>
 }
@@ -42,6 +38,8 @@ function DashboardPage() {
   const [tasksStatus, setTasksStatus] = useState('loading')
   const [fitnessStatus, setFitnessStatus] = useState('loading')
   const [financeStatus, setFinanceStatus] = useState('loading')
+  const [analytics, setAnalytics] = useState(null)
+  const [analyticsStatus, setAnalyticsStatus] = useState('loading')
 
   const request = useCallback((path) => apiRequest(path, {
     headers: { Authorization: `Bearer ${accessToken}` },
@@ -66,6 +64,9 @@ function DashboardPage() {
         setTasks(items)
         setTasksStatus('ready')
       })
+      .catch(() => {
+        if (isCurrent) setTasksStatus('error')
+      })
 
     request('/api/workouts')
       .then((items) => {
@@ -76,9 +77,6 @@ function DashboardPage() {
       .catch(() => {
         if (isCurrent) setFitnessStatus('error')
       })
-      .catch(() => {
-        if (isCurrent) setTasksStatus('error')
-      })
 
     request('/api/financetransactions')
       .then((items) => {
@@ -88,6 +86,16 @@ function DashboardPage() {
       })
       .catch(() => {
         if (isCurrent) setFinanceStatus('error')
+      })
+
+    request('/api/analytics/summary')
+      .then((data) => {
+        if (!isCurrent) return
+        setAnalytics(data)
+        setAnalyticsStatus('ready')
+      })
+      .catch(() => {
+        if (isCurrent) setAnalyticsStatus('error')
       })
 
     return () => {
@@ -141,6 +149,8 @@ function DashboardPage() {
   const monthlyBalance = monthlyIncome - monthlyExpenses
   const latestTransaction = transactions[0]
   const monthName = new Intl.DateTimeFormat(undefined, { month: 'long' }).format(now)
+  const momentumScore = analytics?.momentumScore.score
+  const dailyHabitMax = Math.max(...(analytics?.habits.dailyCompletions.map((day) => day.value) ?? [0]), 1)
 
   return (
     <div className="app-shell">
@@ -161,10 +171,12 @@ function DashboardPage() {
           <section className="dashboard-grid">
             <article className="card score-card">
               <CardHeader eyebrow="Overall performance" title="Momentum Score" meta="This week" />
-              <div className="score-content">
-                <div className="score-ring"><div><strong>82</strong><span>Excellent</span></div></div>
-                <div className="score-copy"><div className="trend">↗ <strong>6 points</strong> <span>from last week</span></div><p>You’re building a strong rhythm across your core areas.</p><div className="score-legend"><span><i className="purple"></i>Habits <b>90</b></span><span><i className="green"></i>Fitness <b>78</b></span><span><i className="orange"></i>Tasks <b>81</b></span></div></div>
-              </div>
+              {analyticsStatus === 'loading' ? <div className="dashboard-card-state">Calculating your score…</div> : analyticsStatus === 'error' ? <div className="dashboard-card-state error">Couldn’t load your score.</div> : (
+                <div className="score-content">
+                  <div className="score-ring"><div><strong>{momentumScore ?? '—'}</strong><span>{momentumScore === null ? 'Add data' : momentumScore >= 85 ? 'Excellent' : momentumScore >= 70 ? 'Strong' : momentumScore >= 50 ? 'Building' : 'Growing'}</span></div></div>
+                  <div className="score-copy"><p>Your score blends the areas where you have meaningful activity.</p><div className="score-legend"><span><i className="purple"></i>Habits <b>{analytics.momentumScore.habits.score ?? 'N/A'}</b></span><span><i className="orange"></i>Tasks <b>{analytics.momentumScore.tasks.score ?? 'N/A'}</b></span><span><i className="green"></i>Fitness <b>{analytics.momentumScore.fitness.score ?? 'N/A'}</b></span><span><i className="teal"></i>Finance <b>{analytics.momentumScore.finance.score ?? 'N/A'}</b></span></div></div>
+                </div>
+              )}
             </article>
 
             <article className="card habits-card">
@@ -188,11 +200,15 @@ function DashboardPage() {
             </article>
 
             <article className="card weekly-card">
-              <CardHeader eyebrow="Activity" title="Weekly Progress" meta="Jul 16–22" accent="blue-text" />
-              <div className="chart">
-                {week.map(([day, height], index) => <div className="bar-col" key={index}><div className="bar-track"><span style={{height: `${height}%`}} className={index === 3 ? 'highlight' : ''}></span></div><b>{day}</b></div>)}
-              </div>
-              <div className="chart-footer"><span><i></i>Daily score</span><strong>+12% <small>vs. last week</small></strong></div>
+              <CardHeader eyebrow="Activity" title="Weekly Progress" meta="This week" accent="blue-text" />
+              {analyticsStatus === 'loading' ? <div className="dashboard-card-state">Loading progress…</div> : analyticsStatus === 'error' ? <div className="dashboard-card-state error">Couldn’t load progress.</div> : (
+                <>
+                  <div className="chart">
+                    {analytics.habits.dailyCompletions.map((day) => <div className="bar-col" key={day.date}><div className="bar-track"><span style={{height: `${day.value / dailyHabitMax * 100}%`}} className={day.date === analytics.period.today ? 'highlight' : ''}></span></div><b>{day.label.slice(0, 1)}</b></div>)}
+                  </div>
+                  <div className="chart-footer"><span><i></i>Habit completions</span><strong>{analytics.habits.completionsThisWeek} <small>this week</small></strong></div>
+                </>
+              )}
             </article>
 
             <article className="card fitness-card">
