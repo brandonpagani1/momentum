@@ -6,6 +6,7 @@ const navItems = [
   ['□', 'Tasks', '/tasks'],
   ['⌁', 'Fitness', '/fitness'],
   ['$', 'Finance', '/finance'],
+  ['◎', 'Goals', '/goals'],
   ['◫', 'Analytics', '/analytics'],
 ]
 

@@ -100,6 +100,8 @@ export default function DashboardPage() {
   const [tasksStatus, setTasksStatus] = useState('loading')
   const [fitnessStatus, setFitnessStatus] = useState('loading')
   const [financeStatus, setFinanceStatus] = useState('loading')
+  const [goals, setGoals] = useState([])
+  const [goalsStatus, setGoalsStatus] = useState('loading')
   const [analytics, setAnalytics] = useState(null)
   const [analyticsStatus, setAnalyticsStatus] = useState('loading')
 
@@ -123,6 +125,7 @@ export default function DashboardPage() {
     load('/api/tasks', setTasks, setTasksStatus)
     load('/api/workouts', setWorkouts, setFitnessStatus)
     load('/api/financetransactions', setTransactions, setFinanceStatus)
+    load('/api/goals', setGoals, setGoalsStatus)
     load('/api/analytics/summary', setAnalytics, setAnalyticsStatus)
 
     return () => {
@@ -171,6 +174,8 @@ export default function DashboardPage() {
   const dailyHabitMax = Math.max(...(analytics?.habits.dailyCompletions.map((day) => day.value) ?? [0]), 1)
   const hasWeeklyHabitActivity = (analytics?.habits.completionsThisWeek ?? 0) > 0
   const insight = buildInsight(analytics)
+  const activeGoals = goals.filter((goal) => goal.status === 'Active')
+  const completedGoals = goals.filter((goal) => goal.status === 'Completed').length
 
   const summaryItems = [
     { tone: 'purple', icon: '✓', label: 'Habits today', value: habitsStatus === 'ready' ? `${completedHabits}/${habits.length}` : '—', detail: habitsStatus === 'error' ? 'Unavailable' : `${habitProgress}% complete` },
@@ -206,6 +211,7 @@ export default function DashboardPage() {
               <Link to="/tasks"><span aria-hidden="true">＋</span>Add task</Link>
               <Link to="/fitness"><span aria-hidden="true">↗</span>Log workout</Link>
               <Link to="/finance"><span aria-hidden="true">$</span>Add transaction</Link>
+              <Link to="/goals"><span aria-hidden="true">◎</span>Add goal</Link>
             </nav>
           </section>
 
@@ -286,6 +292,19 @@ export default function DashboardPage() {
               <CardHeader eyebrow="From your data" title="Insight" meta={analyticsStatus === 'ready' ? 'Updated now' : ''} accent="purple-text" />
               {analyticsStatus === 'loading' ? <DashboardState dark>Finding a useful insight…</DashboardState> : analyticsStatus === 'error' ? <DashboardState status="error" dark>An insight isn’t available right now.</DashboardState> : <div className="insight-content"><div className="spark">✦</div><div><strong>{insight.title}</strong><p>{insight.body}</p><span>Based on your current Momentum data</span></div></div>}
               <CardLink to="/analytics">See all analytics</CardLink>
+            </article>
+
+            <article className="card goals-dashboard-card" aria-busy={goalsStatus === 'loading'}>
+              <CardHeader eyebrow="Milestones" title="Goals" meta={goalsStatus === 'ready' ? `${activeGoals.length} active · ${completedGoals} completed` : ''} accent="green-text" />
+              {goalsStatus === 'loading' ? <DashboardState>Loading goals…</DashboardState> : goalsStatus === 'error' ? <DashboardState status="error">Goals are temporarily unavailable.</DashboardState> : activeGoals.length === 0 ? <DashboardState status="empty">{goals.length ? 'No active goals. Resume one or create a new milestone.' : 'No goals yet. Set your first meaningful target.'}</DashboardState> : (
+                <div className="dashboard-goals-list">
+                  {activeGoals.slice(0, 3).map((goal) => {
+                    const goalProgress = Math.min(100, Math.round(goal.currentValue / goal.targetValue * 100))
+                    return <div key={goal.id}><p><strong>{goal.title}</strong><small>{goal.currentValue} / {goal.targetValue} {goal.unit ?? ''} · {dueDetails(goal.targetDate).label}</small></p><b>{goalProgress}%</b><div className="progress-line" role="progressbar" aria-label={`${goal.title} progress`} aria-valuemin="0" aria-valuemax="100" aria-valuenow={goalProgress}><span style={{ width: `${goalProgress}%` }} /></div></div>
+                  })}
+                </div>
+              )}
+              <CardLink to="/goals">Manage goals</CardLink>
             </article>
           </section>
         </main>

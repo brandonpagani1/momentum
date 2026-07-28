@@ -74,6 +74,12 @@ public sealed class AnalyticsController(AuthDbContext dbContext) : ControllerBas
             })
             .ToListAsync();
 
+        var goals = await dbContext.Goals
+            .AsNoTracking()
+            .Where(goal => goal.UserId == userId)
+            .Select(goal => new { goal.Status, goal.CurrentValue, goal.TargetValue })
+            .ToListAsync();
+
         var weekDates = Enumerable.Range(0, 7).Select(weekStart.AddDays).ToList();
         var habitDates = habits.SelectMany(habit => habit.Completions).ToList();
         var habitsToday = habitDates.Count(date => date == today);
@@ -134,6 +140,17 @@ public sealed class AnalyticsController(AuthDbContext dbContext) : ControllerBas
                         .Sum(item => item.Amount)))
                 .ToList());
 
+        var activeGoals = goals.Where(goal => goal.Status == GoalStatus.Active).ToList();
+        var goalsResponse = new GoalsAnalyticsResponse(
+            activeGoals.Count,
+            goals.Count(goal => goal.Status == GoalStatus.Completed),
+            goals.Count(goal => goal.Status == GoalStatus.Paused),
+            Percentage(goals.Count(goal => goal.Status == GoalStatus.Completed), goals.Count),
+            activeGoals.Count == 0
+                ? 0
+                : (int)Math.Round(activeGoals.Average(goal =>
+                    Math.Clamp(goal.CurrentValue / goal.TargetValue * 100, 0, 100))));
+
         int? habitScore = habits.Count == 0
             ? null
             : Percentage(
@@ -174,13 +191,14 @@ public sealed class AnalyticsController(AuthDbContext dbContext) : ControllerBas
             taskResponse,
             fitnessResponse,
             financeResponse,
+            goalsResponse,
             new MomentumScoreResponse(
                 momentumScore,
                 Component(habitScore, 30),
                 Component(taskScore, 30),
                 Component(fitnessScore, 20),
                 Component(financeScore, 20)),
-            habits.Count + tasks.Count + workouts.Count + transactions.Count > 0));
+            habits.Count + tasks.Count + workouts.Count + transactions.Count + goals.Count > 0));
     }
 
     private static DailyCountResponse Daily(DateOnly date, int value) =>

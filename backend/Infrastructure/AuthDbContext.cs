@@ -12,6 +12,7 @@ public sealed class AuthDbContext(DbContextOptions<AuthDbContext> options)
     public DbSet<TaskItem> Tasks => Set<TaskItem>();
     public DbSet<Workout> Workouts => Set<Workout>();
     public DbSet<FinanceTransaction> FinanceTransactions => Set<FinanceTransaction>();
+    public DbSet<Goal> Goals => Set<Goal>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -73,6 +74,23 @@ public sealed class AuthDbContext(DbContextOptions<AuthDbContext> options)
                 .OnDelete(DeleteBehavior.Cascade);
             transaction.HasIndex(item => item.UserId);
             transaction.HasIndex(item => new { item.UserId, item.TransactionDate });
+        });
+
+        builder.Entity<Goal>(goal =>
+        {
+            goal.Property(item => item.Title).HasMaxLength(150).IsRequired();
+            goal.Property(item => item.Description).HasMaxLength(1000);
+            goal.Property(item => item.Category).HasMaxLength(50).IsRequired();
+            goal.Property(item => item.Unit).HasMaxLength(30);
+            goal.Property(item => item.TargetValue).HasPrecision(18, 2);
+            goal.Property(item => item.CurrentValue).HasPrecision(18, 2);
+            goal.Property(item => item.Status).HasConversion<string>().HasMaxLength(12);
+            goal.HasOne(item => item.User)
+                .WithMany(user => user.Goals)
+                .HasForeignKey(item => item.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+            goal.HasIndex(item => item.UserId);
+            goal.HasIndex(item => new { item.UserId, item.Status, item.TargetDate });
         });
     }
 }
