@@ -1,5 +1,6 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import ProtectedRoute from './auth/ProtectedRoute.jsx'
+import AnalyticsPage from './pages/AnalyticsPage.jsx'
 import DashboardPage from './pages/DashboardPage.jsx'
 import FinancePage from './pages/FinancePage.jsx'
 import FitnessPage from './pages/FitnessPage.jsx'
@@ -19,6 +20,7 @@ function App() {
         <Route path="/tasks" element={<TasksPage />} />
         <Route path="/fitness" element={<FitnessPage />} />
         <Route path="/finance" element={<FinancePage />} />
+        <Route path="/analytics" element={<AnalyticsPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>
